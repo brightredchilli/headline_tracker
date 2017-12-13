@@ -16,14 +16,14 @@ directory_base = "images/"
 normalize_javascript = """
       elem = document.querySelector('{}');
       elem.style.color = "#000";
-      elem.style.width = \"400px\";
+      //elem.style.width = \"400px\";
 """
 
 adjust_background_color = """
       elem = document.querySelector('{}');
       // for good measure set both element and it's parent to white
       elem.parentElement.style.backgroundColor="#fff";
-      elem.style.backgroundColor = "#fff";
+      elem.style.backgroundColor = "#fff0";
 """
 
 
@@ -139,7 +139,7 @@ def find_npr_bbox(driver):
 npr_scraper = Scraper("https://www.npr.org/", find_npr_bbox)
 
 washpost_scraper = Scraper("https://www.washingtonpost.com",
-                           "#main-content .headline a")
+                           "#main-content .headline")
 
 def remove_ads_usatoday(driver):
     click_button_javascript = """
@@ -174,7 +174,5 @@ foxnews_scraper.get()
 npr_scraper.get()
 washpost_scraper.get()
 usatoday_scraper.get()
-
-# print(dir(content))
 
 
