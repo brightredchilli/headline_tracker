@@ -1,0 +1,13 @@
+{% extends 'default.html' %}
+
+{% block body %}
+{{ super() }}
+
+{% for pubname, images in pubs.items() %}
+
+  <img class="cropped_image" src="{{ images.cropped.path }}">
+
+{% endfor %}
+
+
+{% endblock %}

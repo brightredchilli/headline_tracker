@@ -1,7 +1,6 @@
 from app import app
 from collections import namedtuple
 from datetime import datetime
-from flask import json, redirect, url_for, request
 from itertools import groupby
 from operator import itemgetter, attrgetter
 from os import listdir
@@ -9,7 +8,15 @@ from os.path import dirname, isfile, join
 from pprint import pprint as pp
 import re
 
-def get_image_listing_json(target_date, time=None):
+Image = namedtuple('Image', 'publication date path')
+
+def get_image_listing(target_date):
+    """
+    Get the latest listing of images based on a date
+    :param target_date: datetime object
+    :return: json string containing the latest images
+    """
+
     images_path = app.config['APP_IMAGES_PATH']
     mypath = join(app.config['APP_ROOT'], images_path)
     files = listdir(mypath)
@@ -41,11 +48,8 @@ def get_image_listing_json(target_date, time=None):
         pubs_dict[key] = { 'cropped' : cropped_dict, \
                           'original' : original_dict }
 
-    full_paths = [ join("/", images_path, png) for png in png_files ]
+    return pubs_dict
 
-    return json.jsonify(pubs=pubs_dict)
-
-Image = namedtuple('Image', 'publication date path')
 
 def parse_date(name):
     """
