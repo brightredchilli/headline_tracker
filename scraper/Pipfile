@@ -13,7 +13,6 @@ unicode-slugify = "==0.1.3"
 "beautifulsoup4" = "*"
 "urllib3" = "*"
 tldextract = "*"
-flask = "*"
 
 
 [dev-packages]

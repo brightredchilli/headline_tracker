@@ -10,7 +10,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
 
-directory_base = "static/images/"
+directory_base = "../server/static/images/"
+
+# TODO: overwrite this with an environment variable that has the path in production
+
 
 # This site is not responsive, we force their hand
 normalize_javascript = """
