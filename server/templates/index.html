@@ -4,8 +4,15 @@
 {{ super() }}
 
 <div class="row">
-    {% for pubname, images in pubs.items() %}
+  <div class="col-12">
+    <p>
+      Headline tracker is a simple application that scrapes headlines from several major news publications daily. Can you guess the organizations which the headlines belong to?
+    </p>
 
+  </div>
+
+
+    {% for pubname, images in pubs.items() %}
   <div class="col-12">
     <figure class="cropped-image">
       <img class="img-fluid mx-auto d-block pb-2"
