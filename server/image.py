@@ -38,17 +38,35 @@ def get_image_listing(target_date):
         cropped = next((i for i in valuesiter if "cropped" in i.path), None)
         original = next((i for i in valuesiter if i.date == cropped.date and i.path != cropped.path), None)
 
-        cropped_dict = { 'path' : join('/', images_path, cropped.path), \
-                        'date' : cropped.date }
-        original_dict = { 'path' : join('/', images_path, original.path), \
-                         'date' : original.date }
+        cropped_dict = {'path' : join('/', images_path, cropped.path), \
+                        'date' : cropped.date}
+
+        original_dict = {'path' : join('/', images_path, original.path), \
+                         'date' : original.date}
 
         # get first cropped image
 
-        pubs_dict[key] = { 'cropped' : cropped_dict, \
-                          'original' : original_dict }
+        pubs_dict[key] = {'cropped' : cropped_dict, \
+                          'original' : original_dict, \
+                          'url' : get_url(cropped.publication)}
 
     return pubs_dict
+
+
+def get_url(vendor):
+    """
+    :param vendor: Canonical vendor name
+    :return: Full vendor url
+    """
+    vendor_to_url = {
+        'nytimes' : 'https://nytimes.com',
+        'usatoday' : 'https://usatoday.com',
+        'washingtonpost' : 'https://washingtonpost.com',
+        'foxnews' : 'http://foxnews.com',
+        'npr' : 'https://npr.org',
+    }
+
+    return vendor_to_url.get(vendor, 'Unknown url')
 
 
 def parse_date(name):

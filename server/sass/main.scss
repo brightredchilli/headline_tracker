@@ -1,2 +1,7 @@
+@import "bootstrap/bootstrap";
 
-@import "bootstrap/bootstrap"
+.cropped-image-caption {
+  opacity: 0;// hide by default, jquery will show
+}
+
+

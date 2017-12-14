@@ -2,6 +2,12 @@ from datetime import datetime
 from flask import Flask, json, redirect, render_template, request, url_for
 from os.path import dirname, join, realpath
 from pprint import pprint as pp
+from os import environ
+
+debug_mode = environ.get('FLASK_DEBUG', False)
+
+if debug_mode:
+    from livereload import Server, shell
 
 dir_path = dirname(realpath(__file__))
 app = Flask(__name__)
@@ -10,6 +16,7 @@ app.config['APP_IMAGES_PATH'] = 'static/images'
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['site_title'] = 'Who is watching'
 app.config['site_description'] = 'A headline gatherer'
+
 try:
     app.config.from_envvar('APP_ENVIRONMENTS')
 except:
@@ -37,4 +44,21 @@ def headlines():
         return json.jsonify({ 'pubs' : pubs })
     else:
         return render_template('index.html', pubs=pubs)
+
+@app.template_filter('formattime')
+def _jinja2_filter_datetime(date):
+    #date = dateutil.parser.parse(date)
+    #native = date.replace(tzinfo=None)
+    format='%b %d, %Y at %I:%M %p'
+    return datetime.strftime(date, format)
+
+if debug_mode:
+    print("Starting livereload server:")
+    app.debug = True
+    server = Server(app.wsgi_app)
+    server.watch('static/css/*.css')
+    server.watch('static/js/*.js')
+    server.watch('templates/*')
+    server.watch('*.py')
+    server.serve()
 

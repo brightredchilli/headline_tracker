@@ -3,11 +3,21 @@
 {% block body %}
 {{ super() }}
 
-{% for pubname, images in pubs.items() %}
+<div class="row">
+    {% for pubname, images in pubs.items() %}
 
-  <img class="cropped_image" src="{{ images.cropped.path }}">
+  <div class="col-12">
+    <figure class="cropped-image">
+      <img class="img-fluid mx-auto d-block pb-2"
+           src="{{ images.cropped.path }}">
 
-{% endfor %}
+     <figcaption class="cropped-image-caption" >
+       Fetched from <a href="{{ images.url }}">{{ images.url }}</a> at {{ images.cropped.date | formattime }}. <a href="{{ images.original.path }}">View original</a>
+     </figcaption>
 
+    </figure>
 
+  </div>
+    {% endfor %}
+</div>
 {% endblock %}
