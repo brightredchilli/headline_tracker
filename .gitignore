@@ -3,3 +3,4 @@ images/
 .ipynb_checkpoints
 __pycache__
 *.pyc
+node_modules/

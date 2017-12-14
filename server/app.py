@@ -7,6 +7,7 @@ dir_path = dirname(realpath(__file__))
 app = Flask(__name__)
 app.config['APP_ROOT'] = dir_path + '/'
 app.config['APP_IMAGES_PATH'] = 'static/images'
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['site_title'] = 'Who is watching'
 app.config['site_description'] = 'A headline gatherer'
 try:
