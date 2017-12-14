@@ -1,6 +1,12 @@
 
 # Who is Watching?
 
+### Original Image
+![Original Image](nytimes.png "New York Times, original")
+
+### Extracted Headline
+![Headline Image](nytimes_cropped.png "New York Times, headline")
+
 ## Motivation
 
 Today we have so many news sources, it's impossible to follow all of
