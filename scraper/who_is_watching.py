@@ -9,11 +9,22 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
+from urllib.parse import urlparse
 
 directory_base = "../server/static/images/"
 
 # TODO: overwrite this with an environment variable that has the path in production
 
+selenium_server_url = None
+
+if os.environ.get('DOCKER_HOST'):
+    url = tldextract.extract(os.environ['DOCKER_HOST'])
+    selenium_server_url = 'http://' + url.domain + ':4444' + '/wd/hub'
+    print('found url: {}'.format(selenium_server_url))
+
+# TODO: overwrite this with an environment variable that has the path in production
+if os.environ.get('SELENIUM_HOST'):
+    selenium_server_url = os.environ['SELENIUM_HOST']
 
 # This site is not responsive, we force their hand
 normalize_javascript = """
@@ -43,19 +54,36 @@ class Scraper():
         self.url = url
         self.selector = selector
 
-    def _init_driver(self):
+    def get_options(self):
         options = webdriver.ChromeOptions()
-        options.add_argument("headless")
-        options.add_argument('--window-size=500x800')
-        self.driver = webdriver.Chrome(chrome_options=options)
+        #options.set_headless(True)
+        options.add_argument('--window-size=800,800')
+        return options
+
+
+    def _init_driver(self):
+        self.driver = webdriver.Chrome(chrome_options=self.get_options())
         self.driver.set_window_size(800, 800)
+        self.driver.scale = 2
+
+    def _init_driver_remote(self):
+        # Create a desired capabilities object as a starting point.
+        capabilities = self.get_options().to_capabilities()
+
+        # Instantiate an instance of Remote WebDriver with the desired capabilities.
+        self.driver = webdriver.Remote(desired_capabilities=capabilities,
+                                  command_executor=selenium_server_url)
+        self.driver.scale = 1
 
     def get(self):
         time_slug = datetime.now().strftime("%Y-%m-%d-%H_%M")
         print("Feching {} at {}".format(self.url, time_slug))
 
         if not hasattr(self, "driver"):
-            self._init_driver()
+            if selenium_server_url:
+                self._init_driver_remote()
+            else:
+                self._init_driver()
 
         self.driver.get(self.url)
         webdriver_wait(self.driver, 2) # wait for ads to disappear
@@ -73,7 +101,7 @@ class Scraper():
         self.driver.quit()
 
         # still have to investigate what determines this scale
-        scale = 2
+        scale = self.driver.scale
         x, y, w, h = bbox
         bbox = (x*scale, y*scale, w*scale, h*scale)
         print(bbox)
@@ -172,10 +200,11 @@ def find_usatoday_bbox(driver):
 usatoday_scraper = Scraper("https://www.usatoday.com", find_usatoday_bbox)
 usatoday_scraper.remove_ads = remove_ads_usatoday
 
-nytimes_scraper.get()
-foxnews_scraper.get()
-npr_scraper.get()
-washpost_scraper.get()
-usatoday_scraper.get()
+if __name__ == '__main__':
+    nytimes_scraper.get()
+    foxnews_scraper.get()
+    npr_scraper.get()
+    washpost_scraper.get()
+    usatoday_scraper.get()
 
 
