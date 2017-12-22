@@ -3,6 +3,7 @@ from flask import Flask, json, redirect, render_template, request, url_for
 from os.path import dirname, join, realpath
 from pprint import pprint as pp
 from os import environ
+from helpers import ReverseProxied
 
 debug_mode = environ.get('FLASK_DEBUG', False)
 
@@ -11,6 +12,8 @@ if debug_mode:
 
 dir_path = dirname(realpath(__file__))
 app = Flask(__name__)
+app.wsgi_app = ReverseProxied(app.wsgi_app)
+
 app.config['APP_ROOT'] = dir_path + '/'
 app.config['APP_IMAGES_PATH'] = environ.get('IMAGE_PATH', 'images')
 app.config['TEMPLATES_AUTO_RELOAD'] = debug_mode
