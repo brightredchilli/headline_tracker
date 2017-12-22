@@ -1,0 +1,16 @@
+version: "3.3"
+services:
+  selenium-server:
+    image: selenium/standalone-chrome:3.8.1-bohrium
+    ports:
+      - "4444:4444"
+  scraper:
+    image: brightredchilli/who_is_watching/scraper
+    volumes:
+      - /Users/Ying/Code/who_is_watching/server/static/images:/images
+    environment:
+      - SELENIUM_HOST=http://selenium-server:4444/wd/hub
+      - IMAGE_VOLUME=/images/
+    depends_on:
+      - selenium-server
+        #    command: ["./wait-for-it.sh", "es:9200", "--", "python", "app.py"]

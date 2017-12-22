@@ -1,8 +1,6 @@
 from selenium import webdriver
-from slugify import slugify
-import time
 import tldextract
-from datetime import datetime
+from datetime import datetime, timezone
 from PIL import Image
 from types import *
 from selenium.webdriver.common.by import By
@@ -11,9 +9,14 @@ from selenium.webdriver.support import expected_conditions as EC
 import os
 from urllib.parse import urlparse
 
+screen_width=800
+screen_height=1000
 directory_base = "../server/static/images/"
 
 # TODO: overwrite this with an environment variable that has the path in production
+if os.environ.get('IMAGE_VOLUME'):
+    directory_base = os.environ['IMAGE_VOLUME']
+
 
 selenium_server_url = None
 
@@ -25,6 +28,9 @@ if os.environ.get('DOCKER_HOST'):
 # TODO: overwrite this with an environment variable that has the path in production
 if os.environ.get('SELENIUM_HOST'):
     selenium_server_url = os.environ['SELENIUM_HOST']
+
+print("Directory base is {}".format(directory_base))
+print("Selenium host is {}".format(selenium_server_url))
 
 # This site is not responsive, we force their hand
 normalize_javascript = """
@@ -57,13 +63,13 @@ class Scraper():
     def get_options(self):
         options = webdriver.ChromeOptions()
         #options.set_headless(True)
-        options.add_argument('--window-size=800,800')
+        options.add_argument('--window-size={},{}'.format(screen_width, screen_height))
         return options
 
 
     def _init_driver(self):
         self.driver = webdriver.Chrome(chrome_options=self.get_options())
-        self.driver.set_window_size(800, 800)
+        self.driver.set_window_size(screen_width, screen_height)
         self.driver.scale = 2
 
     def _init_driver_remote(self):
@@ -76,7 +82,8 @@ class Scraper():
         self.driver.scale = 1
 
     def get(self):
-        time_slug = datetime.now().strftime("%Y-%m-%d-%H_%M")
+        zone = datetime.now(timezone.utc).astimezone().tzinfo
+        time_slug = datetime.now(tz=zone).strftime("%Y-%m-%d-%H_%M%Z_")
         print("Feching {} at {}".format(self.url, time_slug))
 
         if not hasattr(self, "driver"):
@@ -87,7 +94,7 @@ class Scraper():
 
         self.driver.get(self.url)
         webdriver_wait(self.driver, 2) # wait for ads to disappear
-        site_slug = directory_base + time_slug + "_" + tldextract.extract(self.url).domain
+        site_slug = directory_base + time_slug + tldextract.extract(self.url).domain
         original_filename =  site_slug + ".png"
         filename =  site_slug + "_working_copy" + ".png"
 
