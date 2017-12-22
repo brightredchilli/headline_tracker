@@ -12,8 +12,8 @@ if debug_mode:
 dir_path = dirname(realpath(__file__))
 app = Flask(__name__)
 app.config['APP_ROOT'] = dir_path + '/'
-app.config['APP_IMAGES_PATH'] = 'static/images'
-app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['APP_IMAGES_PATH'] = environ.get('IMAGE_PATH', 'images')
+app.config['TEMPLATES_AUTO_RELOAD'] = debug_mode
 app.config['site_title'] = 'Who is watching'
 app.config['site_description'] = 'A headline gatherer'
 
@@ -21,6 +21,8 @@ try:
     app.config.from_envvar('APP_ENVIRONMENTS')
 except:
     pass
+
+print("Resolved image path: {}".format(app.config['APP_IMAGES_PATH']))
 
 # import libraries after the app call
 from image import get_image_listing

@@ -26,7 +26,8 @@
     "js-watch": "onchange js/** -i -- npm run js-build",
     "js-build": "browserify js/main.js -t babelify --presets env --outfile static/js/bundle.js",
     "run-debug": "export FLASK_APP=app.py;export FLASK_DEBUG=1; flask run",
-    "watch": "parallelshell 'npm run css-watch' 'npm run js-watch' 'npm run run-debug'"
+    "watch": "parallelshell 'npm run css-watch' 'npm run js-watch' 'npm run run-debug'",
+    "compile": "npm run css && npm run js-build && ./make"
   },
   "keywords": [],
   "author": "",
