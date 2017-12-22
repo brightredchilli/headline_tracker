@@ -2,13 +2,24 @@ from app import app
 from collections import namedtuple
 from datetime import datetime
 from itertools import groupby
+from helpers import get_current_aware_date
 from operator import itemgetter, attrgetter
 from os import listdir
 from os.path import dirname, isfile, join
 from pprint import pprint as pp
+import pytz
 import re
 
 Image = namedtuple('Image', 'publication date path')
+
+
+date_format_v2 = '%Y-%m-%d-%H_%M%Z_'
+date_format_v1 = '%Y-%m-%d-%H_%M_'
+date_format_v2_len = 20
+date_format_v1_len = 17
+date_regex = re.compile('\d\d\d\d-\d\d-\d\d-\d\d_\d\d(\w{3})?_')
+tz_eastern = pytz.timezone('US/Eastern')
+tz_utc = pytz.utc
 
 def get_image_listing(target_date):
     """
@@ -23,9 +34,11 @@ def get_image_listing(target_date):
 
     # get png files
     png_files = [ f for f in files if isimage(f)]
+    print(target_date)
 
     imgs = [Image(parse_publication(f), parse_date(f), f) for f in png_files]
-    imgs = [i for i in imgs if matches_date(i.date, target_date)] # get only target date's images
+    imgs = [i for i in imgs if i.date <= target_date] # filter out later dates
+    #imgs = [i for i in imgs if matches_date(i.date, target_date)] # get only target date's images
 
     pubs_dict = {}
     # must sort dictionary before using itertools.groupby
@@ -69,19 +82,43 @@ def get_url(vendor):
     return vendor_to_url.get(vendor, 'Unknown url')
 
 
-def parse_date(name):
+def parse_date(name, zone=None):
     """
     :param name: filename as a string
     :return: datetime object
     """
-    # reference filename 2017-12-11-16_23_usatoday.png
-    date_format = '%Y-%m-%d-%H_%M_'
-    date_format_len = 17 # len("2017-12-11-16_23_")
+    date_part = get_date_part(name)
+    if date_part:
+        if len(date_part) == date_format_v2_len:
+            date_format = date_format_v2
+        elif len(date_part) == date_format_v1_len:
+            date_format = date_format_v1
+        else:
+            print("no date found!")
+            return None
 
-    date_part = name[0:date_format_len]
-
+    date_part = name[0:len(date_part)]
     date = datetime.strptime(date_part, date_format)
+
+    if date_format == date_format_v1:
+        zone = tz_eastern
+    else:
+        # quite bad, we only handle two formats for now
+        # It's actually not easy to back out the date based on
+        # shortcode mapping like 'EST' back to US/Eastern
+        code = date_part[-4:-1]
+        if code == 'EST':
+            zone = tz_eastern
+        else:
+            zone = tz_utc
+
+    date = zone.localize(date)
     return date
+
+def get_date_part(name):
+    match = date_regex.search(name)
+    return match.group(0) if match else None
+
 
 def parse_publication(name):
     """
@@ -89,10 +126,8 @@ def parse_publication(name):
     :param name: filename as a string
     :return: the publication key
     """
-    date_format_len = len("2017-12-11-16_23")
-    date_format_len = 17 # len("2017-12-11-16_23_")
+    name = name[len(get_date_part(name)):]
 
-    name = re.sub(r'[0-9_\-]*(.*)', r'\1', name)
     publication = re.sub(r'(_cropped\.png|\.png)', r'', name)
     return publication
 

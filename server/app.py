@@ -24,7 +24,7 @@ except:
 
 # import libraries after the app call
 from image import get_image_listing
-from helpers import request_wants_json
+from helpers import request_wants_json, get_current_aware_date
 
 @app.route('/')
 def hello():
@@ -33,10 +33,12 @@ def hello():
 @app.route('/headlines', strict_slashes=False, methods=['GET'])
 def headlines():
     date_str = request.args.get('date', None)
+    current = get_current_aware_date()
     try:
-        date = datetime.datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
+        date = datetime.strptime(date_str, '%Y-%m-%d')
+        date = datetime(date.year, date.month, date.day, tzinfo=current.tzinfo)
     except:
-        date = datetime.now()
+        date = current
 
     pubs = get_image_listing(date)
 
@@ -47,9 +49,7 @@ def headlines():
 
 @app.template_filter('formattime')
 def _jinja2_filter_datetime(date):
-    #date = dateutil.parser.parse(date)
-    #native = date.replace(tzinfo=None)
-    format='%b %d, %Y at %I:%M %p'
+    format='%b %d, %Y at %I:%M %p %Z'
     return datetime.strftime(date, format)
 
 if debug_mode:
