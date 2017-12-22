@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Flask, json, redirect, render_template, request, url_for
+from flask import Flask, json, redirect, render_template, request, url_for, send_from_directory
 from os.path import dirname, join, realpath
 from pprint import pprint as pp
 from os import environ
@@ -15,7 +15,8 @@ app = Flask(__name__)
 app.wsgi_app = ReverseProxied(app.wsgi_app)
 
 app.config['APP_ROOT'] = dir_path + '/'
-app.config['APP_IMAGES_PATH'] = environ.get('IMAGE_PATH', 'images')
+imagepath = environ.get('IMAGE_PATH', 'test-images')
+app.config['APP_IMAGES_PATH'] = join(app.config['APP_ROOT'], imagepath)
 app.config['TEMPLATES_AUTO_RELOAD'] = debug_mode
 app.config['site_title'] = 'Who is watching'
 app.config['site_description'] = 'A headline gatherer'
@@ -30,6 +31,11 @@ print("Resolved image path: {}".format(app.config['APP_IMAGES_PATH']))
 # import libraries after the app call
 from image import get_image_listing
 from helpers import request_wants_json, get_current_aware_date
+
+if debug_mode:
+    @app.route('/images/<path:path>')
+    def send_image(path):
+        return send_from_directory(app.config['APP_IMAGES_PATH'], path)
 
 @app.route('/')
 def hello():

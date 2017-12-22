@@ -29,8 +29,8 @@ def get_image_listing(target_date):
     """
 
     images_path = app.config['APP_IMAGES_PATH']
-    mypath = join(app.config['APP_ROOT'], images_path)
-    files = listdir(mypath)
+    #images_path = join(app.config['APP_ROOT'], images_path)
+    files = listdir(images_path)
 
     # get png files
     png_files = [ f for f in files if isimage(f)]
@@ -51,10 +51,10 @@ def get_image_listing(target_date):
         cropped = next((i for i in valuesiter if "cropped" in i.path), None)
         original = next((i for i in valuesiter if i.date == cropped.date and i.path != cropped.path), None)
 
-        cropped_dict = {'path' : join('/', images_path, cropped.path), \
+        cropped_dict = {'path' : join("images", cropped.path), \
                         'date' : cropped.date}
 
-        original_dict = {'path' : join('/', images_path, original.path), \
+        original_dict = {'path' : join("images", original.path), \
                          'date' : original.date}
 
         # get first cropped image

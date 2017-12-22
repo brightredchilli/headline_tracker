@@ -1,5 +1,5 @@
 *.png
-images/
+test-images/
 .ipynb_checkpoints
 __pycache__
 *.pyc
