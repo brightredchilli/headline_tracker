@@ -67,9 +67,10 @@ flask run # if using pyenv
 pipenv run python flask run # if NOT using pyenv
 
 ```
-
-The server also has other dependencies on chrome, etc, which will be captured
-using a Dockerfile or ansible
+If the server needs to be seeded with data, use this invocation:
+```
+scp -i <path-to-your-private-key> -r <local-images-dir>/* <user>@<hostname>:/images
+```
 
 ### Scraper
 
