@@ -1,0 +1,2 @@
+#!/bin/bash
+docker build -t brightredchilli/who_is_watching/server .
