@@ -3,7 +3,7 @@ FROM brightredchilli/uwsgi-nginx-flask:python3.5
 MAINTAINER Ying Quan Tan <ying.quan.tan@gmail.com>
 
 COPY Pipfile* /app/
-RUN pipenv install --verbose
+RUN pipenv install --verbose --sequential
 # copy our application code
 
 COPY uwsgi.ini *.py /app/

@@ -28,7 +28,7 @@ RUN pip install pipenv==8.3
 
 #USER deploy
 
-RUN pipenv install --verbose
+RUN pipenv install --verbose --sequential
 
 
 CMD ["pipenv", "run", "python", "who_is_watching.py"]
