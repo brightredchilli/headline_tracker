@@ -1,12 +1,13 @@
 from selenium import webdriver
 import tldextract
 from datetime import datetime, timezone
+import os
 from PIL import Image
 from types import *
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import os
+from time import sleep
 from urllib.parse import urlparse
 
 screen_width=800
@@ -28,6 +29,7 @@ if os.environ.get('DOCKER_HOST'):
 # TODO: overwrite this with an environment variable that has the path in production
 if os.environ.get('SELENIUM_HOST'):
     selenium_server_url = os.environ['SELENIUM_HOST']
+    sleep(2) # give some time for the selenium server to start up
 
 print("Directory base is {}".format(directory_base))
 print("Selenium host is {}".format(selenium_server_url))
