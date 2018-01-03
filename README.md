@@ -1,7 +1,7 @@
 
 # Who is Watching?
 
-See it live at headlinetracker.apps.yingquantan.com.
+See it live at [headlinetracker.apps.yingquantan.com](http://headlinetracker.apps.yingquantan.com).
 
 ![Screenshot](headlinetracker_screenshot.png "Screenshot of app")
 
