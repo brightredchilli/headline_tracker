@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 
 screen_width=800
 screen_height=1000
-directory_base = "../server/static/images/"
+directory_base = "../server/test-images/"
 
 # TODO: overwrite this with an environment variable that has the path in production
 if os.environ.get('IMAGE_VOLUME'):
@@ -21,7 +21,7 @@ if os.environ.get('IMAGE_VOLUME'):
 
 selenium_server_url = None
 
-if os.environ.get('DOCKER_HOST'):
+if os.environ.get('USE_DOCKER_HOST') and os.environ.get('DOCKER_HOST'):
     url = tldextract.extract(os.environ['DOCKER_HOST'])
     selenium_server_url = 'http://' + url.domain + ':4444' + '/wd/hub'
     print('found url: {}'.format(selenium_server_url))
@@ -37,17 +37,26 @@ print("Selenium host is {}".format(selenium_server_url))
 # This site is not responsive, we force their hand
 normalize_javascript = """
       elem = document.querySelector('{}');
-      elem.style.color = "#000";
-      //elem.style.width = \"400px\";
+      if (elem) {{
+          elem.style.color = "#000";
+      }}
 """
 
 adjust_background_color = """
       elem = document.querySelector('{}');
       // for good measure set both element and it's parent to white
-      elem.parentElement.style.backgroundColor="#fff";
-      elem.style.backgroundColor = "#fff0";
+      if (elem) {{
+          elem.parentElement.style.backgroundColor="#fff";
+          elem.style.backgroundColor = "#fff0";
+      }}
 """
 
+hide_element = """
+      elem = document.querySelector('{}')
+      if (elem) {{
+          elem.style.display = "none"
+      }}
+"""
 
 def webdriver_wait(driver, seconds):
     try:
@@ -57,10 +66,21 @@ def webdriver_wait(driver, seconds):
         # this will always execute, we always ignore
         pass
 
+def webdriver_scroll_into_view(driver, selector):
+    # Although this seems to do nothing, it has a side effect of scrolling the
+    # target element into view. Invoking javascript's Element.scrollIntoView,
+    # though it works on the browser, seems to fail when run inside selenium.
+    print("Scrolling {} into view".format(selector))
+    content = driver.find_element_by_css_selector(selector)
+    location = content.location_once_scrolled_into_view
+    size = content.size
+
+
 class Scraper():
     def __init__(self, url, selector):
         self.url = url
         self.selector = selector
+
 
     def get_options(self):
         options = webdriver.ChromeOptions()
@@ -86,7 +106,7 @@ class Scraper():
     def get(self):
         zone = datetime.now(timezone.utc).astimezone().tzinfo
         time_slug = datetime.now(tz=zone).strftime("%Y-%m-%d-%H_%M%Z_")
-        print("Feching {} at {}".format(self.url, time_slug))
+        print("Fetching {} at {}".format(self.url, time_slug))
 
         if not hasattr(self, "driver"):
             if selenium_server_url:
@@ -95,7 +115,6 @@ class Scraper():
                 self._init_driver()
 
         self.driver.get(self.url)
-        webdriver_wait(self.driver, 2) # wait for ads to disappear
         site_slug = directory_base + time_slug + tldextract.extract(self.url).domain
         original_filename =  site_slug + ".png"
         filename =  site_slug + "_working_copy" + ".png"
@@ -105,7 +124,6 @@ class Scraper():
 
         self.driver.save_screenshot(original_filename)
         bbox = self.find_bounding_box()
-        webdriver_wait(self.driver, 1)
         self.driver.save_screenshot(filename)
         self.driver.quit()
 
@@ -113,7 +131,6 @@ class Scraper():
         scale = self.driver.scale
         x, y, w, h = bbox
         bbox = (x*scale, y*scale, w*scale, h*scale)
-        print(bbox)
 
         with Image.open(filename) as im:
             cropped_filename = site_slug + "_cropped.png"
@@ -140,7 +157,23 @@ class Scraper():
         return (x, y, x+w, y+h)
 
 
+def remove_ads_nytimes(driver):
+    try:
+        if driver.find_element_by_css_selector("#signup-favor"):
+            print("attempting to remove #signup-favor")
+            driver.execute_script(hide_element.format("#signup-favor"))
+    except:
+        pass
+
+    try:
+        if driver.find_element_by_css_selector("#welc_supercontainer"):
+            print("attempting to remove #welc_supercontainer")
+            driver.execute_script(hide_element.format("#welc_supercontainer"))
+    except:
+        pass
+
 nytimes_scraper = Scraper("https://nytimes.com", ".story-heading a")
+nytimes_scraper.remove_ads = remove_ads_nytimes
 
 def find_foxnews_bbox(driver):
     bg_selector = ".main-content .story-1 h2.title"
@@ -181,21 +214,19 @@ npr_scraper = Scraper("https://www.npr.org/", find_npr_bbox)
 washpost_scraper = Scraper("https://www.washingtonpost.com",
                            "#main-content .headline")
 
+usatoday_selector = '.hfwmm-primary-hed p'
 def remove_ads_usatoday(driver):
     click_button_javascript = """
       button = document.querySelector(\".partner-scroll-circle\");
       button != undefined && button.click();
       """
-    driver.execute_script(click_button_javascript)
-    webdriver_wait(driver, 1)
+    driver.execute_script(click_button_javascript.format(usatoday_selector))
 
 def find_usatoday_bbox(driver):
-    selector = '.hfwmm-primary-hed p'
+    selector = usatoday_selector
     content = driver.find_element_by_css_selector(selector)
     driver.execute_script(adjust_background_color.format(selector))
     driver.execute_script(normalize_javascript.format(selector))
-
-    webdriver_wait(driver, 2)
 
     location = content.location_once_scrolled_into_view
     size = content.size
