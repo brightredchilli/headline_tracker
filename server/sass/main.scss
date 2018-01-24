@@ -1,7 +1,19 @@
+@import "bootstrap/functions";
+@import "bootstrap/variables";
+
+// customize the header size
+$h1-font-size: $font-size-base * 1.5;
+
+
 @import "bootstrap/bootstrap";
+
 
 .cropped-image-caption {
   opacity: 0;// hide by default, jquery will show
 }
 
+
+.bg-white-alpha {
+  background-color:rgba(255, 255, 255, 0.98)
+}
 
