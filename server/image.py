@@ -52,10 +52,10 @@ def get_image_listing(target_date):
         original = next((i for i in valuesiter if i.date == cropped.date and i.path != cropped.path), None)
 
         cropped_dict = {'path' : join("images", cropped.path), \
-                        'date' : cropped.date}
+                        'date' : cropped.date} if cropped else None
 
         original_dict = {'path' : join("images", original.path), \
-                         'date' : original.date}
+                         'date' : original.date} if original else None
 
         # get first cropped image
 
